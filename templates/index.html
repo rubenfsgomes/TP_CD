@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Task Master</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style="text-align: center">Task Master</h1>
+    {% if simuls|length < 1 %}
+    <h4>There are no tasks. Create one below!</h4>
+    {% else %}
+    <table border="1" align="center">
+        <tr>
+            <th>ID</th>
+            <th>Maquinas</th>
+            <th>Operações</th>
+            <th>Trabalhos</th>
+            <th>Opções</th>
+        </tr>
+        {% for simul in simuls %}
+            <tr>
+                <td>{{ simul.id }}</td>
+                <td>{{ simul.numMaquinas }}</td>
+                <td>{{ simul.numOperacoes }}</td>
+                <td>{{ simul.numTrabalhos }}</td>
+                <td>
+                    <a href="/delete/{{simul.id}}">Delete</a><br>
+                    <a href="/update/{{simul.id}}">Update</a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+    <form action="/" method="POST" class="form">
+        <input type="text" name="numMaq" id="numMaq">
+        <input type="text" name="numOp" id="numOp">
+        <input type="text" name="numTrab" id="numTrab">
+        <input type="submit" value="Add Simulation" name="" id="">
+    </form>
+</div>
+{% endblock %}
