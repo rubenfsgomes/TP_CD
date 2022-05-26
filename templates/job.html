@@ -1,0 +1,33 @@
+
+<!--
+{% block head %}
+<title>Simulation Manager</title>
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style="text-align: center">Simulation Manager</h1>
+    <h1>Submit the jobs</h1>
+    <form action="/" method="POST" class="form" enctype="multipart/form-data">
+        <input type="text" name="nome" id="nome">
+        <input type="submit" value="Add Job" name="" id="">
+    </form>
+    <button>
+    </button>
+</div>
+{% endblock %}
+-->
+
+{% for job in jobs %}
+<tr>
+    <td>{{ job.id }}</td><br>
+    <td>{{ job.nome }}</td><br>
+    <td>{{job.simul_id}}</td><br>
+</tr>
+{% endfor %}
+
+<h1>Submit the jobs</h1>
+    <form action="/create_job/{{simul.id}}" method="POST" class="form" enctype="multipart/form-data">
+        <input type="text" name="jobnome" id="jobnome">
+        <input type="submit" value="Add Job" name="" id="">
+    </form>
