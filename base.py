@@ -1,5 +1,6 @@
 from platform import machine
 from pydoc import classname
+from turtle import clear
 from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -90,11 +91,17 @@ def create_simulation():
             for j in range(int(numTrab)):
                 obj = Operacao(-1, -1)
                 operations.append(obj)
-            jobs.append(operations) 
+            jobs.append(list(operations))
+            operations.clear()
         simulations.append(jobs)
         return redirect("/createSimul")
     else:
         return render_template('simul.html', simulations=simulations)
+
+'''
+def create_table():
+    if request.method == 'POST'
+'''
 
 @app.route('/simulations', methods=['GET'])
 def get_simulations():
