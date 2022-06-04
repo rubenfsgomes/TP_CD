@@ -1,12 +1,17 @@
 from platform import machine
 from pydoc import classname
+from tkinter import E
+from tkinter.tix import Form
 from turtle import clear
 from flask import Flask, abort, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
 import numpy as np
-
+from flask_wtf import FlaskForm
+from wtforms import (StringField, TextAreaField, IntegerField, BooleanField, DateField,
+                     RadioField)
+from wtforms.validators import InputRequired, Length
 
 from sqlalchemy import false, null, ForeignKey
 
@@ -75,6 +80,10 @@ class Operacao:
         self.idMachine = idMachine
         self.duration = duration
 
+class OpForm(Form):
+    duration = IntegerField(u'Duration')
+    maqId = IntegerField(u'IdMaquina') 
+
 simulations = [
 ]
 
@@ -98,19 +107,29 @@ def create_simulation():
     else:
         return render_template('simul.html', simulations=simulations)
 
-'''
+def generate_field_for_question(question):
+    return IntegerField(question.text)
+
+@app.route('/table', methods=['POST', 'GET'])
 def create_table():
-    if request.method == 'POST'
-'''
+    if request.method == 'POST':
+        for simul in simulations:
+            for jobs in simul:
+                for op in jobs:
+                   op.duration = request.form['duration']
+                   op.idMachine = request.form['maqid']
+        return redirect("/createSimul")
+    else:
+        return render_template("table.html", simulations=simulations)
+
+@app.route('/operation', methods=['POST', 'GET'])
+def create_operation():
+    pass
+
 
 @app.route('/simulations', methods=['GET'])
 def get_simulations():
     return jsonify({'simulations': simulations})
-
-class Table(db.Model):
-    __tablename__="table"
-    id = db.Column(db.Integer, primary_key=True)
-    simulation_id= db.Column(db.Integer, ForeignKey('simulation.id'))
 
 if __name__ == "__main__":
     app.run(debug=True)

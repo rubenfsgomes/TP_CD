@@ -1,19 +1,20 @@
-{% extends 'base.html' %}
-
-{% block head %}
-<title>Simulation Manager</title>
-{% endblock %}
-
-{% block body %}
-<div class="content">
-    <h1 style="text-align: center">Simulation Manager</h1>
-    <h1>Submit the jobs</h1>
-    {% for i in range(simul.numTrabalhos) %}
-        <button>
-            <a href="/create_job/{{simul.id}}">Submit Job</a><br>
-        </button>
+<table border="1" align="center">
+<form action="/" method="POST" class="form"></form>
+{% for simul in simulations %}
+    simulation
+    <td>
+    {% for jobs in simul %}
+        {% for ops in jobs %}
+        
+            <input type="text" name="maqid" id="maqid">
+            <input type="text" name="duracao" id="duracao">
+            <input type="submit" value="Add Operation" name="" id="">
+        
+        {% endfor %}
+        <br>
     {% endfor %}
+    </td>
+{% endfor %}
+</form>
 
-
-</div>
-{% endblock %}
+</table>
