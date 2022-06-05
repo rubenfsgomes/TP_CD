@@ -1,140 +1,257 @@
-from flask import Flask, redirect, render_template, request, url_for
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from flask_migrate import Migrate
+from flask import Flask,render_template,request,url_for,redirect,flash,jsonify
+from werkzeug.utils import secure_filename
+from jobShop import JobShop
+import json
+import os
+import urllib.request
+from werkzeug.utils import secure_filename
+import re
 
-from sqlalchemy import Table, Column, Integer, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+UPLOAD_FOLDER = 'Files'
+ALLOWED_EXTENSIONS = {'txt', 'xls','xlsx'}
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Integer, default=0)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-    def __repr__(self):
-        return '<Task %r>' % self.id
-
-class Simulation(db.Model):
-    __tablename__ = "simulation"
-    id = db.Column(db.Integer, primary_key=True)
-    numMaquinas = completed = db.Column(db.Integer, nullable=False)
-    numOperacoes = completed = db.Column(db.Integer, nullable=False)
-    numTrabalhos = completed = db.Column(db.Integer, nullable=False)
-    completed = db.Column(db.Integer, default=0)
-    maquinas = db.relationship('Machine', backref='simulation', lazy=True)
-    operacoes = db.relationship('Operation', backref='simulation', lazy=True)
-    trabalhos = db.relationship('Job', backref='simulation', lazy=True)
-    table = relationship("Table", back_populates="simulation", uselist=False)
-
-    def __repr__(self):
-        return '<simulation %r>' % self.id
-
-class Machine(db.Model):
-    __tablename__ = "machine"
-    id = db.Column(db.Integer, primary_key=True)
-    simul_id = db.Column(db.Integer, db.ForeignKey('simulation.id'), nullable=False)
-    operacoes = db.relationship('Operation', backref='machine', lazy=True)
-
-    def __repr__(self):
-        return '<machine %r>' % self.id
-
-class Operation(db.Model):
-    __tablename__ = "operation"
-    id = db.Column(db.Integer, primary_key=True)
-    simul_id = db.Column(db.Integer, db.ForeignKey('simulation.id'), nullable=False)
-    job_id = db.Column(db.Integer, db.ForeignKey('job.id'), nullable=False)
-    machine_id = db.Column(db.Integer, db.ForeignKey('machine.id'), nullable=True)
-
-    def __repr__(self):
-        return '<operation %r>' % self.id
-
-class Job(db.Model):
-    __tablename__ = "job"
-    id = db.Column(db.Integer, primary_key=True)
-    simul_id = db.Column(db.Integer, db.ForeignKey('simulation.id'), nullable=False)
-    operacoes = db.relationship('Operation', backref='job', lazy=True)
-
-    def __repr__(self):
-        return '<job %r>' % self.id
-
-class Table(db.Model):
-    __tablename__ = "table"
-    id = db.Column(db.Integer, primary_key=True)
-    simulation = relationship("Simulation", back_populates="table", uselist=False)
-
-@app.route('/create_job/<int:id>')
-
-@app.route('/create_table/<int:id>', methods=['GET', 'POST'])
-def createTable(id):
-    simul = Simulation.query.get_or_404(id)
-
-    for i in range(simul.numTrabalhos):
-        new_job = Job(simul_id=simul.id)
-
-        try:
-            db.session.add(new_job)
-            simul.trabalhos.append(new_job)
-            db.session.commit()
-            return redirect('/')
-        except:
-            return 'There was an issue adding that simulation'
-
-    return render_template('table.html')
+def longest(x):
+    if isinstance(x,list):
+        yield len(x)
+        for y in x:
+            yield from longest(y)
+def read_txt(filename):
+    l=[]
+    mch_nb=0
     
-    
+    with open(filename,'r') as f:
+        f1=f.readlines()
+        for line_no, line in enumerate(open(filename)):
+            myIntegers = [int(x) for x in line.split()] 
+            mch_nb= len(myIntegers)
+        f2=[]
+        for line in f1:
+            x=re.sub(' +', ' ',line)
+            f2.append(x)
+        l = [[int(num)  for num in line.split(" ")] for line in f2 ]
+        logst=max(longest(l))
+        resp=all([c.replace(" ","").replace("\n","").isdigit() for c in f2])
+        if resp==True:           
+            return logst,l,mch_nb
+        else:
+            return "Fichier non valide"
 
-@app.route('/', methods=['POST', 'GET'])
-def index():
-    if request.method == 'POST':
-        simul_maq = request.form['numMaq']
-        simul_op = request.form['numOp']
-        simul_trab = request.form['numTrab']
-        new_simul = Simulation(numMaquinas=simul_maq, numOperacoes=simul_op, numTrabalhos=simul_trab)
 
-        try:
-            db.session.add(new_simul)
-            db.session.commit()
-            return redirect('/')
-        except:
-            return 'There was an issue adding that simulation'
+
+@app.route("/jobshop/home",methods=["GET"])
+def home():
+    return render_template("index.html")
+@app.route('/', methods=["GET"])
+def defaultRoot():
+    return redirect(url_for("home"))
+@app.route("/jobshop/manual", methods=["GET","POST"])
+def manual():
+    if request.method=="GET":
+        return render_template("grid.html")
     else:
-        simuls = Simulation.query.all()
-        return render_template('index.html', simuls=simuls)
+        data=request.get_json()["data"]
+        data=data[1:]
+        data1=[]
+        for d1 in data:
+            j=0
+            data11=[]            
+            for d2 in d1:
+                t=(j,int(d2))
+                data11.append(t)
+                j+=1
+            data1.append(data11)
+        lst,tps=JobShop().MinimalJobshopSat(data1)      
+        return  json.dumps({"time":tps,"data":lst})
 
-
-
-@app.route('/delete/<int:id>')
-def delete(id):
-    simul_to_delete = Simulation.query.get_or_404(id)
-
-    try:
-        db.session.delete(simul_to_delete)
-        db.session.commit()
-        return redirect('/')
-    except:
-        return 'There was a problem deleting that simulation'
-
-@app.route('/update/<int:id>', methods=['GET', 'POST'])
-def update(id):
-    simul = Simulation.query.get_or_404(id)
-    if request.method == 'POST':
-        simul.numMaquinas = request.form['numMaq']
-        simul.numOperacoes = request.form['numOp']
-        simul.numTrabalhos = request.form['numTrab']
-        try:
-            db.session.commit()
-            return redirect("/")
-        except:
-            return 'There was a problem updating that simulation'
+@app.route("/jobshop/From_File",methods=["GET","POST"])
+def from_file():
+    if request.method=="GET":
+        return render_template("file.html")
     else:
-        return render_template('update.html', simul=simul)
+        # check if the post request has the file part
+        if 'files[]' not in request.files:
+            #
+            resp = jsonify({'message' : 'Aucun fichier'})
+            resp.status_code = 400
+            return resp
+        
+        files = request.files.getlist('files[]')
+        
+        errors = {}
+        success = False 
+        filename=""       
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                success = True
+            else:
+                #errors[file.filename] = 'File type is not allowed'
+                errors[file.filename] = 'Format du fichier non supporté'
+        
+        if success and errors:
+            #errors['message'] = 'File(s) successfully uploaded'
+            errors['message'] = 'Fichier téléchargé avec succès'
+            resp = jsonify(errors)
+            resp.status_code = 206
+            return resp
+        if success:
+            resp = jsonify({"message":"Fichier téléchargé avec succès"})
+            resp.status_code = 201
+            if ".txt" in os.path.join(app.config['UPLOAD_FOLDER'], filename):
+                lgst,data,mch_nb=read_txt(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                
+                return jsonify({"message":"Fichier téléchargé avec succès","longueur":lgst,"Data":data,"mchnb":mch_nb})
+
+        else:
+            resp = jsonify(errors)
+            #resp.status_code = 400
+            return resp
+
+
+
+
+
+
+
+
+if __name__=="__main__":
+    app.secret_key = 'super secret key'
+    app.config['SESSION_TYPE'] = 'filesystem'
+
+    #sess.init_app(app)
+    app.run(debug=True)from flask import Flask,render_template,request,url_for,redirect,flash,jsonify
+from werkzeug.utils import secure_filename
+from jobShop import JobShop
+import json
+import os
+import urllib.request
+from werkzeug.utils import secure_filename
+import re
+
+UPLOAD_FOLDER = 'Files'
+ALLOWED_EXTENSIONS = {'txt', 'xls','xlsx'}
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def longest(x):
+    if isinstance(x,list):
+        yield len(x)
+        for y in x:
+            yield from longest(y)
+def read_txt(filename):
+    l=[]
+    mch_nb=0
     
-if __name__ == "__main__":
+    with open(filename,'r') as f:
+        f1=f.readlines()
+        for line_no, line in enumerate(open(filename)):
+            myIntegers = [int(x) for x in line.split()] 
+            mch_nb= len(myIntegers)
+        f2=[]
+        for line in f1:
+            x=re.sub(' +', ' ',line)
+            f2.append(x)
+        l = [[int(num)  for num in line.split(" ")] for line in f2 ]
+        logst=max(longest(l))
+        resp=all([c.replace(" ","").replace("\n","").isdigit() for c in f2])
+        if resp==True:           
+            return logst,l,mch_nb
+        else:
+            return "Fichier non valide"
+
+
+
+@app.route("/jobshop/home",methods=["GET"])
+def home():
+    return render_template("index.html")
+@app.route('/', methods=["GET"])
+def defaultRoot():
+    return redirect(url_for("home"))
+@app.route("/jobshop/manual", methods=["GET","POST"])
+def manual():
+    if request.method=="GET":
+        return render_template("grid.html")
+    else:
+        data=request.get_json()["data"]
+        data=data[1:]
+        data1=[]
+        for d1 in data:
+            j=0
+            data11=[]            
+            for d2 in d1:
+                t=(j,int(d2))
+                data11.append(t)
+                j+=1
+            data1.append(data11)
+        lst,tps=JobShop().MinimalJobshopSat(data1)      
+        return  json.dumps({"time":tps,"data":lst})
+
+@app.route("/jobshop/From_File",methods=["GET","POST"])
+def from_file():
+    if request.method=="GET":
+        return render_template("file.html")
+    else:
+        # check if the post request has the file part
+        if 'files[]' not in request.files:
+            #
+            resp = jsonify({'message' : 'Aucun fichier'})
+            resp.status_code = 400
+            return resp
+        
+        files = request.files.getlist('files[]')
+        
+        errors = {}
+        success = False 
+        filename=""       
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                success = True
+            else:
+                #errors[file.filename] = 'File type is not allowed'
+                errors[file.filename] = 'Format du fichier non supporté'
+        
+        if success and errors:
+            #errors['message'] = 'File(s) successfully uploaded'
+            errors['message'] = 'Fichier téléchargé avec succès'
+            resp = jsonify(errors)
+            resp.status_code = 206
+            return resp
+        if success:
+            resp = jsonify({"message":"Fichier téléchargé avec succès"})
+            resp.status_code = 201
+            if ".txt" in os.path.join(app.config['UPLOAD_FOLDER'], filename):
+                lgst,data,mch_nb=read_txt(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                
+                return jsonify({"message":"Fichier téléchargé avec succès","longueur":lgst,"Data":data,"mchnb":mch_nb})
+
+        else:
+            resp = jsonify(errors)
+            #resp.status_code = 400
+            return resp
+
+
+
+
+
+
+
+
+if __name__=="__main__":
+    app.secret_key = 'super secret key'
+    app.config['SESSION_TYPE'] = 'filesystem'
+
+    #sess.init_app(app)
     app.run(debug=True)
