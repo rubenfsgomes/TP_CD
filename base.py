@@ -87,7 +87,7 @@ def deleteUser(id):
 
 simulations = [
 ]
-
+'''
 @app.route('/createSimul', methods=['POST', 'GET'])
 def create_simulation():
     if request.method == 'POST':
@@ -109,6 +109,7 @@ def create_simulation():
         return redirect("/createSimul")
     else:
         return render_template('simul.html', simulations=simulations)
+    '''
 
 def generate_field_for_question(question):
     return IntegerField(question.text)
@@ -150,7 +151,7 @@ def manual():
                 data11.append(t)
                 j+=1
             data1.append(data11)
-        lst,tps=JobShopGoogle().MinimalJobshopSat(data1)      
+        lst,tps=JobShopGoogle().JobShopData(data1)
         return  json.dumps({"time":tps,"data":lst})
         
 if __name__ == "__main__":

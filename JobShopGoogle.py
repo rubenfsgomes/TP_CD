@@ -4,15 +4,12 @@ from ortools.sat.python import cp_model
 
 
 class JobShopGoogle:
-    def main():
-        """Minimal jobshop problem."""
-        # Data.
-        jobs_data = [  # task = (machine_id, processing_time).
-            [(0, 3), (1, 2), (2, 2)],  # Job0
-            [(0, 2), (2, 1), (1, 4)],  # Job1
-            [(1, 4), (2, 3)]  # Job2
-        ]
+    
+    def __init__(self):
+        super().__init__()
+        self.data=[]
 
+    def JobShopData(self, jobs_data):
         machines_count = 1 + max(task[0] for job in jobs_data for task in job)
         all_machines = range(machines_count)
         # Computes horizon dynamically as the sum of all durations.
@@ -119,5 +116,3 @@ class JobShopGoogle:
         print('  - wall time: %f s' % solver.WallTime())
 
 
-    if __name__ == '__main__':
-        main()
