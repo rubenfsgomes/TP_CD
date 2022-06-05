@@ -81,6 +81,10 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route("/delete/user/<int:id>", methods=['GET', 'POST'])
+def deleteUser(id):
+    User.query.filter(User.id == id).delete()
+
 simulations = [
 ]
 
