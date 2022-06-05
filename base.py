@@ -1,28 +1,17 @@
 from lib2to3.pgen2.token import OP
-from platform import machine
-from pydoc import classname
-from tkinter import E
-from tkinter.tix import Form
-from turtle import clear
-from flask import Flask,render_template,request,url_for,redirect,flash,jsonify
+from flask import Flask,render_template,request,url_for,redirect,flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
-import numpy as np
-from flask_wtf import FlaskForm
-from wtforms import (StringField, TextAreaField, IntegerField, BooleanField, DateField,
-                     RadioField)
+from wtforms import (IntegerField)
 from forms import *
-from wtforms.validators import InputRequired, Length
-from werkzeug.utils import secure_filename
 from JobShopGoogle import JobShopGoogle
 import json
 import os
 from flask_login import login_user, LoginManager, login_required, logout_user, UserMixin
 from datetime import datetime
-from sqlalchemy import false, null, ForeignKey
 from werkzeug.security import generate_password_hash, check_password_hash
-from  flask_login import LoginManager, login_user, current_user
+from  flask_login import LoginManager, login_user
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
@@ -71,7 +60,7 @@ def login():
         if user is not None and user.check_password(form.password.data):
             login_user(user)
             next = request.args.get("next")
-            return redirect('/jobs/add')
+            return redirect('/simul')
         flash('Invalid email address or Password.')    
     return render_template('login.html', form=form)
 
@@ -85,74 +74,33 @@ def logout():
 def deleteUser(id):
     User.query.filter(User.id == id).delete()
 
-simulations = [
-]
-'''
-@app.route('/createSimul', methods=['POST', 'GET'])
-def create_simulation():
-    if request.method == 'POST':
-        jobs = []
-        operations = []
-        numMaq = request.form['numMaq']
-        numOp = request.form['numOp']
-        numTrab = request.form['numTrab']
-        duration = request.form['duration']
-        idMachine = request.form['idMachine']
-
-        for i in range(int(numTrab)):
-            for j in range(int(numTrab)):
-                obj = Operacao(-1, -1)
-                operations.append(obj)
-            jobs.append(list(operations))
-            operations.clear()
-        simulations.append(jobs)
-        return redirect("/createSimul")
-    else:
-        return render_template('simul.html', simulations=simulations)
-    '''
 
 def generate_field_for_question(question):
     return IntegerField(question.text)
-
-@app.route('/table', methods=['POST', 'GET'])
-def create_table():
-    if request.method == 'POST':
-        duration = request.form['duration']
-        idMachine = request.form['idMachine']
-        for jobs in simulations:
-            for ops in jobs:
-                for op in ops:
-                    op.duration = duration
-                   
-        return redirect("/createSimul")
-    else:
-        return render_template("table.html", simulations=simulations)
 
 @app.route('/operation', methods=['POST', 'GET'])
 def create_operation():
     pass
 
-lst = []
-
-@app.route("/jobs/add", methods=["GET","POST"])
+@app.route("/simul", methods=["GET","POST"])
 @login_required
-def manual():
+def SimulFill():
     if request.method=="GET":
         return render_template("index.html")
     else:
         data=request.get_json()["data"]
         data=data[1:]
-        data1=[]
-        for d1 in data:
+        forTable=[]
+        for objs in data:
             j=0
-            data11=[]            
-            for d2 in d1:
-                t=(j,int(d2))
-                data11.append(t)
+            dataToAdd=[]            
+            for obj in objs:
+                toAdd=(j,int(obj))
+                dataToAdd.append(toAdd)
                 j+=1
-            data1.append(data11)
-        lst,tps=JobShopGoogle().JobShopData(data1)
-        return  json.dumps({"time":tps,"data":lst})
+            forTable.append(dataToAdd)
+        listOfData,tps=JobShopGoogle().JobShopData(forTable)
+        return  json.dumps({"time":tps,"data":listOfData})
         
 if __name__ == "__main__":
     app.run(debug=True)

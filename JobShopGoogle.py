@@ -14,7 +14,7 @@ class JobShopGoogle:
         all_machines = range(machines_count)
         # Computes horizon dynamically as the sum of all durations.
         horizon = sum(task[1] for job in jobs_data for task in job)
-
+        aff=[]
         # Create the model.
         model = cp_model.CpModel()
 
@@ -82,21 +82,30 @@ class JobShopGoogle:
             output = ''
             for machine in all_machines:
                 # Sort by starting time.
+                 # Sort by starting time.
                 assigned_jobs[machine].sort()
                 sol_line_tasks = 'Machine ' + str(machine) + ': '
+
                 sol_line = '           '
 
                 for assigned_task in assigned_jobs[machine]:
-                    name = 'job_%i_task_%i' % (assigned_task.job,
-                                            assigned_task.index)
+                    aff1=[]
+                    name = 'job%i_%i' % (assigned_task.job, assigned_task.index)
+
                     # Add spaces to output to align columns.
                     sol_line_tasks += '%-15s' % name
+                    aff1.append(assigned_task.job)
+                    aff1.append("Mach"+str(machine))
 
                     start = assigned_task.start
                     duration = assigned_task.duration
+                    aff1.append(assigned_task.start)
+                    aff1.append(duration)
                     sol_tmp = '[%i,%i]' % (start, start + duration)
                     # Add spaces to output to align columns.
                     sol_line += '%-15s' % sol_tmp
+
+                    aff.append(aff1)
 
                 sol_line += '\n'
                 sol_line_tasks += '\n'
@@ -104,15 +113,15 @@ class JobShopGoogle:
                 output += sol_line
 
             # Finally print the solution found.
-            print(f'Optimal Schedule Length: {solver.ObjectiveValue()}')
-            print(output)
-        else:
-            print('No solution found.')
+            nb_job=len(jobs_data)
 
-        # Statistics.
-        print('\nStatistics')
-        print('  - conflicts: %i' % solver.NumConflicts())
-        print('  - branches : %i' % solver.NumBranches())
-        print('  - wall time: %f s' % solver.WallTime())
+            ou=[]
+            for i in range(nb_job):
+                o=[]
+                for j in range(len(aff)):
+                    if aff[j][0]==i:
+                        o.append(aff[j])
+                ou.append(o)
 
-
+            print(jobs_data)
+            return ou,solver.ObjectiveValue()
