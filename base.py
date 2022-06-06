@@ -122,7 +122,7 @@ def delete_sim(id):
     simulations.remove(simulation[0])
     return redirect("/createSimul")
 
-@app.route("/addoperation/<int:idSim>/<int:idJob>", methods=['POST'])
+@app.route("/addoperation/<int:idSim>/<int:idJob>", methods=['GET','POST'])
 def table(idSim, idJob):
     if request.method == 'POST':
         for sim in simulations:
