@@ -125,8 +125,8 @@ google.charts.load("current", {packages:["timeline"]});
     var ccc=[]
     if(datt!=null)
     ccc=datt
-var chartwidth = $('#chartt').width;
-    var container = document.getElementById('chartt');
+var chartwidth = $('#chart').width;
+    var container = document.getElementById('chart');
     var chart = new google.visualization.Timeline(container);
     var dataTable = new google.visualization.DataTable();    
     dataTable.addColumn({ type: 'string', id: 'Tabela' });

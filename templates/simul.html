@@ -1,19 +1,17 @@
-{% for simul in simulations %}
-    simulation
-    {% for jobs in simul %}
-        job
-        {% for op in jobs %}
-            {{ op.duration }}
-            
-        {% endfor %}
-    {% endfor %}
-{% endfor %}
+{% extends 'base.html' %}
 
+{% block head %}
+<title>Simulation Manager</title>
+{% endblock %}
+
+{% block body %}
 <div class="content">
-    <form action="#" method="POST" class="form" >
+    <h1 style="text-align: center">Simulation Manager</h1>
+    <form action="/" method="POST" class="form" enctype="multipart/form-data">
         <input type="text" name="numMaq" id="numMaq">
         <input type="text" name="numOp" id="numOp">
         <input type="text" name="numTrab" id="numTrab">
         <input type="submit" value="Add Simulation" name="" id="">
     </form>
 </div>
+{% endblock %}

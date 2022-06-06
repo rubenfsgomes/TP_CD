@@ -1,5 +1,5 @@
 from lib2to3.pgen2.token import OP
-from flask import Flask,render_template,request,url_for,redirect,flash
+from flask import Flask, abort, jsonify,render_template,request,url_for,redirect,flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
@@ -12,6 +12,7 @@ from flask_login import login_user, LoginManager, login_required, logout_user, U
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from  flask_login import LoginManager, login_user
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydb.db'
@@ -60,7 +61,7 @@ def login():
         if user is not None and user.check_password(form.password.data):
             login_user(user)
             next = request.args.get("next")
-            return redirect('/simul')
+            return redirect('/createSimul')
         flash('Invalid email address or Password.')    
     return render_template('login.html', form=form)
 
@@ -78,9 +79,45 @@ def deleteUser(id):
 def generate_field_for_question(question):
     return IntegerField(question.text)
 
+simulations = [{'id': 0,
+                'numMac': 2,
+                'numOp': 2,
+                'numJob': 2}]
+operations = []
+jobs = []
+
+@app.route('/createSimul', methods=['POST', 'GET'])
+def create_simulation():
+    if request.method == 'POST':
+        numMac = request.form['numMaq']
+        numOp = request.form['numOp']
+        numJob = request.form['numTrab']
+        simulation = {
+            'id': simulations[-1]['id'] + 1,
+            'numMac': [numMac],
+            'numOp': [numOp],
+            'numJob': [numJob]
+        }
+        simulations.append(simulation)
+        return redirect("/createSimul")
+    else:
+        return render_template('simul.html', simulations=simulations)
+
+@app.route("/simulations", methods=['GET'])
+def get_sims():
+    return jsonify({'simulations': simulations})
+
 @app.route('/operation', methods=['POST', 'GET'])
 def create_operation():
     pass
+
+@app.route("/simulation/delete/<int:id>", methods=['DELETE'])
+def delete_sim(id):
+    for sim in simulations:
+        if sim['id'] == id:
+            simulation = sim
+    simulations.remove(simulation[0])
+    return redirect("/createSimul")
 
 @app.route("/simul", methods=["GET","POST"])
 @login_required
