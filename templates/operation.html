@@ -9,10 +9,9 @@
     <h1 style="text-align: center">Simulation Manager</h1>
     <h1>Submit the jobs</h1>
     <form action="/" method="POST" class="form"></form>
-    {% for i in range(simul.numOperacoes) %}
-        <input type="text" name="maqid" id="maqid">
-        <input type="text" name="duracao" id="duracao">
-    {% endfor %}
+    <input type="text" name="idOp" id="idOp">
+    <input type="text" name="idMaq" id="idMaq">
+    <input type="text" name="duration" id="duration">
     <input type="submit" value="Add Job" name="" id="">
     </form>
     <button>

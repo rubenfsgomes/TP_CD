@@ -79,12 +79,15 @@ def deleteUser(id):
 def generate_field_for_question(question):
     return IntegerField(question.text)
 
-simulations = [{'id': 0,
+operations = []
+jobs = [{'id': 1}]
+
+simulations = [{'id': 1,
                 'numMac': 2,
                 'numOp': 2,
-                'numJob': 2}]
-operations = []
-jobs = []
+                'numJob': 2,
+                'jobs': [operations]}]
+
 
 @app.route('/createSimul', methods=['POST', 'GET'])
 def create_simulation():
@@ -118,6 +121,33 @@ def delete_sim(id):
             simulation = sim
     simulations.remove(simulation[0])
     return redirect("/createSimul")
+
+@app.route("/addoperation/<int:idSim>/<int:idJob>", methods=['POST'])
+def table(idSim, idJob):
+    if request.method == 'POST':
+        for sim in simulations:
+            if sim['id'] == idSim:
+                simulation = sim
+
+        idOp = request.form['idOp']
+        idMaq = request.form['idMaq']
+        duration = request.form['duration']
+
+        op = {
+            'id': idOp,
+            'maq': idMaq,
+            'duration': duration
+        }
+
+        job = {
+            'id': idJob,
+            'operation':[op]
+        }
+        jobs.append(job)
+        simulation['jobs'] = jobs
+        return redirect("/createSimul")
+    else:
+        return render_template("operation.html")
 
 @app.route("/simul", methods=["GET","POST"])
 @login_required
