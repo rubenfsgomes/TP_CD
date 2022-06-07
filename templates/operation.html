@@ -5,22 +5,50 @@
 {% endblock %}
 
 {% block body %}
+<head>  
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto|Varela+Round" rel="stylesheet">
+    <link href="../static/css/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+    <style>
+    </style>
+</head>
 <div class="content">
-    <h1 style="text-align: center">Simulation Manager</h1>
-    <h1>Submit the jobs</h1>
+    <h1>Submit the operation</h1>
     <form action="#" method="POST" class="form" enctype="multipart/form-data">
+        <label for="">ID Operation</label>
         <input type="text" name="idOp" id="idOp">
+        <label for="">ID Machine</label>
         <input type="text" name="idMaq" id="idMaq">
+        <label for="">Duration</label>
         <input type="text" name="duration" id="duration">
         <input type="submit" value="Add Job" name="" id="">
     </form>
 </div>
-<table>
-    {%for op in ops%}
-    <th>Machine</th>
-    <th>Duration</th>
-    <td{{op.maq}}></td>
-    <td{{op.}}></td>
-
-</table>
+{% if ops|length < 1 %}
+        <h4>There are no tasks. Create one below!</h4>
+        {% else %}
+        <table border="1" align="center">
+            <tr>
+                <th>ID</th>
+                <th>Maquinas</th>
+                <th>Operações</th>
+                <th>Trabalhos</th>
+                <th>Opções</th>
+            </tr>
+            {% for op in ops %}
+                <tr>
+                    <td>{{ op.id }}</td>
+                    <td>{{ op.mac }}</td>
+                    <td>{{ op.duration }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
 {% endblock %}

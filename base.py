@@ -65,7 +65,6 @@ def login():
     return render_template('login.html', form=form)
 
 @app.route("/logout")
-# @login_required
 def logout():
     logout_user()
     return redirect(url_for('login'))
@@ -109,18 +108,18 @@ def create_simulation():
 def get_sims():
     return jsonify({'simulations': simulations})
 
-@app.route("/simulation/delete/<int:id>", methods=['DELETE'])
+@app.route("/simulation/delete/<int:id>", methods=['DELETE', 'POST', 'GET'])
 @login_required
 def delete_sim(id):
     for sim in simulations:
         if sim['id'] == id:
             simulation = sim
-    simulations.remove(simulation[0])
+    simulations.remove(simulation)
     return redirect("/createSimul")
 
 @app.route("/addoperation/<int:idSim>/<int:idJob>", methods=['GET','POST'])
 @login_required
-def table(idSim, idJob):
+def addOperation(idSim, idJob):
     if request.method == 'POST':
         for sim in simulations:
             if sim['id'] == idSim:
@@ -130,16 +129,26 @@ def table(idSim, idJob):
         idMaq = request.form['idMaq']
         duration = request.form['duration']
 
-        op = {
+        operation = {
             'id': idOp,
             'maq': idMaq,
             'duration': duration
         }
 
-        job = {
-            'id': idJob,
-            'operation':[op]
-        }
+        for job in jobs:
+            if job['id'] == idJob:
+                jobToAdd = job
+
+        if len(jobToAdd)==0:
+            jobToAdd = {
+                'id': idJob,
+                'operation':[operation]
+            }
+        else:
+            for op in job['operation']:
+                if op['id'] == operation['id']:
+                    return 'Operation exists in simulation'
+            job['operation'].append(operation)
         jobs.append(job)
         simulation['jobs'] = jobs
         return redirect("/createSimul")
@@ -148,7 +157,7 @@ def table(idSim, idJob):
 
 @app.route("/simul", methods=["GET","POST"])
 @login_required
-def SimulFill():
+def simulFill():
     if request.method=="GET":
         return render_template("index.html")
     else:
