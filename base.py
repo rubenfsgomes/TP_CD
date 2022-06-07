@@ -1,5 +1,5 @@
 from lib2to3.pgen2.token import OP
-from flask import Flask, abort, jsonify,render_template,request,url_for,redirect,flash
+from flask import Flask, abort, jsonify,render_template,request, send_file,url_for,redirect,flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
@@ -155,6 +155,7 @@ def addOperation(idSim, idJob):
 @login_required
 def table(id):
     if request.method == 'POST':
+        f = open("table.txt", "w")
         for sim in simulations:
                 if sim['id'] == id:
                     simulation = sim
@@ -162,8 +163,15 @@ def table(id):
         for job in simulation['jobs']:
             for op in jobs['operations']:
                 table.append({'job': job['id'], 'operation': op})
+        for job in simulation['jobs']:
+            for op in jobs['operations']:
+                f.write('(%s, %s) ' % ((str)(op['maq']), (str)(op['duration'])))
+            f.write("\n")
+        table_path = "table.txt"
+        f.close()
+        return redirect("/createSimul")
     else: 
-        return jsonify({'table': table}) 
+        return send_file(table_path, as_attachment=True)
 
 @app.route("/simul", methods=["GET","POST"])
 @login_required
