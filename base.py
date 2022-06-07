@@ -72,9 +72,7 @@ def logout():
 @app.route("/delete/user/<int:id>", methods=['GET', 'POST'])
 def deleteUser(id):
     User.query.filter(User.id == id).delete()
-
-def generate_field_for_question(question):
-    return IntegerField(question.text)
+    return redirect(url_for('create_simulation'))
 
 operations = []
 jobs = [{'id': 1}]
@@ -142,18 +140,30 @@ def addOperation(idSim, idJob):
         if len(jobToAdd)==0:
             jobToAdd = {
                 'id': idJob,
-                'operation':[operation]
+                'operations': [operation]
             }
+            jobs.append(job)
         else:
-            for op in job['operation']:
-                if op['id'] == operation['id']:
-                    return 'Operation exists in simulation'
-            job['operation'].append(operation)
-        jobs.append(job)
+            job['operations'] = operation
+
         simulation['jobs'] = jobs
         return redirect("/createSimul")
     else:
         return render_template("operation.html")
+
+@app.route("/table/<int:id>", methods=['POST'])
+@login_required
+def table(id):
+    if request.method == 'POST':
+        for sim in simulations:
+                if sim['id'] == id:
+                    simulation = sim
+        table = []
+        for job in simulation['jobs']:
+            for op in jobs['operations']:
+                table.append({'job': job['id'], 'operation': op})
+    else: 
+        return jsonify({'table': table}) 
 
 @app.route("/simul", methods=["GET","POST"])
 @login_required
