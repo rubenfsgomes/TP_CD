@@ -54,7 +54,6 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email = form.email.data).first()
@@ -75,7 +74,6 @@ def logout():
 def deleteUser(id):
     User.query.filter(User.id == id).delete()
 
-
 def generate_field_for_question(question):
     return IntegerField(question.text)
 
@@ -88,8 +86,8 @@ simulations = [{'id': 1,
                 'numJob': 2,
                 'jobs': [operations]}]
 
-
 @app.route('/createSimul', methods=['POST', 'GET'])
+@login_required
 def create_simulation():
     if request.method == 'POST':
         numMac = request.form['numMaq']
@@ -107,14 +105,12 @@ def create_simulation():
         return render_template('simul.html', simulations=simulations)
 
 @app.route("/simulations", methods=['GET'])
+@login_required
 def get_sims():
     return jsonify({'simulations': simulations})
 
-@app.route('/operation', methods=['POST', 'GET'])
-def create_operation():
-    pass
-
 @app.route("/simulation/delete/<int:id>", methods=['DELETE'])
+@login_required
 def delete_sim(id):
     for sim in simulations:
         if sim['id'] == id:
@@ -123,6 +119,7 @@ def delete_sim(id):
     return redirect("/createSimul")
 
 @app.route("/addoperation/<int:idSim>/<int:idJob>", methods=['GET','POST'])
+@login_required
 def table(idSim, idJob):
     if request.method == 'POST':
         for sim in simulations:
