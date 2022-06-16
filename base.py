@@ -3,7 +3,6 @@ from flask import Flask, abort, jsonify,render_template,request, send_file,url_f
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
-from wtforms import (IntegerField)
 from forms import *
 from JobShopGoogle import JobShopGoogle
 import json
